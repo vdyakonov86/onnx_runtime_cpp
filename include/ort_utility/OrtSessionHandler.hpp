@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <boost/optional.hpp>
 
 namespace Ort
 {
@@ -22,8 +23,8 @@ class OrtSessionHandler
     using DataOutputType = std::pair<float*, std::vector<int64_t>>;
 
     explicit OrtSessionHandler(const std::string& modelPath,  //
-                               const std::optional<size_t>& gpuIdx = std::nullopt,
-                               const std::optional<std::vector<std::vector<int64_t>>>& inputShapes = std::nullopt);
+                               const boost::optional<size_t>& gpuIdx = boost::none,
+                               const boost::optional<std::vector<std::vector<int64_t>>>& inputShapes = boost::none);
     ~OrtSessionHandler();
 
     // multiple inputs, multiple outputs

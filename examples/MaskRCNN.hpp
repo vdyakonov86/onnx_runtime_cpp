@@ -14,7 +14,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <ort_utility/ort_utility.hpp>
-
+#include <boost/optional.hpp>
 namespace Ort
 {
 class MaskRCNN : public ImageRecognitionOrtSessionHandlerBase
@@ -26,8 +26,8 @@ class MaskRCNN : public ImageRecognitionOrtSessionHandlerBase
 
     MaskRCNN(const uint16_t numClasses,                           //
              const std::string& modelPath,                        //
-             const std::optional<size_t>& gpuIdx = std::nullopt,  //
-             const std::optional<std::vector<std::vector<int64_t>>>& inputShapes = std::nullopt);
+             const boost::optional<size_t>& gpuIdx = boost::none,  //
+             const boost::optional<std::vector<std::vector<int64_t>>>& inputShapes = boost::none);
 
     ~MaskRCNN();
 

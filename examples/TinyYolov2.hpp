@@ -18,7 +18,7 @@
 #include <vector>
 
 #include <ort_utility/ort_utility.hpp>
-
+#include <boost/optional.hpp>
 namespace Ort
 {
 class TinyYolov2 : public ImageRecognitionOrtSessionHandlerBase
@@ -40,8 +40,8 @@ class TinyYolov2 : public ImageRecognitionOrtSessionHandlerBase
 
     TinyYolov2(const uint16_t numClasses,                           //
                const std::string& modelPath,                        //
-               const std::optional<size_t>& gpuIdx = std::nullopt,  //
-               const std::optional<std::vector<std::vector<int64_t>>>& inputShapes = std::nullopt);
+               const boost::optional<size_t>& gpuIdx = boost::none,  //
+               const boost::optional<std::vector<std::vector<int64_t>>>& inputShapes = boost::none);
 
     ~TinyYolov2();
 

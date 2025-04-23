@@ -20,8 +20,8 @@ class ObjectDetectionOrtSessionHandler : public ImageRecognitionOrtSessionHandle
     ObjectDetectionOrtSessionHandler(
         const uint16_t numClasses,                           //
         const std::string& modelPath,                        //
-        const std::optional<size_t>& gpuIdx = std::nullopt,  //
-        const std::optional<std::vector<std::vector<int64_t>>>& inputShapes = std::nullopt);
+        const boost::optional<size_t>& gpuIdx = boost::none,  //
+        const boost::optional<std::vector<std::vector<int64_t>>>& inputShapes = boost::none);
 
     ~ObjectDetectionOrtSessionHandler();
 };

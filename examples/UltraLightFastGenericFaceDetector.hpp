@@ -12,7 +12,7 @@
 #include <vector>
 
 #include <ort_utility/ort_utility.hpp>
-
+#include <boost/optional.hpp>
 namespace Ort
 {
 class UltraLightFastGenericFaceDetector : public ImageRecognitionOrtSessionHandlerBase
@@ -25,8 +25,8 @@ class UltraLightFastGenericFaceDetector : public ImageRecognitionOrtSessionHandl
     static constexpr int64_t IMG_CHANNEL = 3;
 
     explicit UltraLightFastGenericFaceDetector(
-        const std::string& modelPath, const std::optional<size_t>& gpuIdx = std::nullopt,
-        const std::optional<std::vector<std::vector<std::int64_t>>>& inputShapes = std::nullopt);
+        const std::string& modelPath, const boost::optional<size_t>& gpuIdx = boost::none,
+        const boost::optional<std::vector<std::vector<std::int64_t>>>& inputShapes = boost::none);
 
     ~UltraLightFastGenericFaceDetector();
 

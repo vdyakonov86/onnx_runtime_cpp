@@ -10,8 +10,8 @@
 namespace Ort
 {
 UltraLightFastGenericFaceDetector::UltraLightFastGenericFaceDetector(
-    const std::string& modelPath, const std::optional<size_t>& gpuIdx,
-    const std::optional<std::vector<std::vector<int64_t>>>& inputShapes)
+    const std::string& modelPath, const boost::optional<size_t>& gpuIdx,
+    const boost::optional<std::vector<std::vector<int64_t>>>& inputShapes)
     : ImageRecognitionOrtSessionHandlerBase(1 /* num classes */, modelPath, gpuIdx, inputShapes)
 {
 }

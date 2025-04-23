@@ -160,6 +160,10 @@ target_include_directories(super_point
     ${OpenCV_INCLUDE_DIRS}
 )
 
+# add_library(superPoint SHARED ${CMAKE_CURRENT_LIST_DIR}/SuperPoint.cpp)
+# target_include_directories(superPoint PRIVATE ${OpenCV_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/include")
+# target_link_libraries(superPoint ${OpenCV_LIBRARIES})
+
 # ---------------------------------------------------------
 
 add_executable(super_glue

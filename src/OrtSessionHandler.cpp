@@ -19,6 +19,8 @@
 #include <numeric>
 #include <sstream>
 
+#include <boost/optional.hpp>
+
 namespace
 {
 std::string toString(const ONNXTensorElementDataType dataType)
@@ -88,8 +90,9 @@ class OrtSessionHandler::OrtSessionHandlerIml
 {
  public:
     OrtSessionHandlerIml(const std::string& modelPath,         //
-                         const std::optional<size_t>& gpuIdx,  //
-                         const std::optional<std::vector<std::vector<int64_t>>>& inputShapes);
+                        const boost::optional<size_t>& gpuIdx,
+                        const boost::optional<std::vector<std::vector<int64_t>>>& inputShapes
+                        );
     ~OrtSessionHandlerIml();
 
     std::vector<DataOutputType> operator()(const std::vector<float*>& inputData) const;
@@ -120,7 +123,7 @@ class OrtSessionHandler::OrtSessionHandlerIml
     Ort::Env m_env;
     Ort::AllocatorWithDefaultOptions m_ortAllocator;
 
-    std::optional<size_t> m_gpuIdx;
+    boost::optional<size_t> m_gpuIdx;
 
     std::vector<std::vector<int64_t>> m_inputShapes;
     std::vector<std::vector<int64_t>> m_outputShapes;
@@ -142,8 +145,8 @@ class OrtSessionHandler::OrtSessionHandlerIml
 //-----------------------------------------------------------------------------//
 
 OrtSessionHandler::OrtSessionHandler(const std::string& modelPath,         //
-                                     const std::optional<size_t>& gpuIdx,  //
-                                     const std::optional<std::vector<std::vector<int64_t>>>& inputShapes)
+                                     const boost::optional<size_t>& gpuIdx,  //
+                                     const boost::optional<std::vector<std::vector<int64_t>>>& inputShapes)
     : m_piml(std::make_unique<OrtSessionHandlerIml>(modelPath,  //
                                                     gpuIdx,     //
                                                     inputShapes))
@@ -164,8 +167,8 @@ OrtSessionHandler::operator()(const std::vector<float*>& inputImgData) const
 
 OrtSessionHandler::OrtSessionHandlerIml::OrtSessionHandlerIml(
     const std::string& modelPath,         //
-    const std::optional<size_t>& gpuIdx,  //
-    const std::optional<std::vector<std::vector<int64_t>>>& inputShapes)
+    const boost::optional<size_t>& gpuIdx,  //
+    const boost::optional<std::vector<std::vector<int64_t>>>& inputShapes)
     : m_modelPath(modelPath)
     , m_session(nullptr)
     , m_env(nullptr)

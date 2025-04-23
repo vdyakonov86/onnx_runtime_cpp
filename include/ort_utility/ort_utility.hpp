@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <boost/optional.hpp>
 
 #include "Constants.hpp"
 

@@ -18,6 +18,7 @@ target_include_directories(${LIBRARY_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
+    ${OpenCV_INCLUDE_DIRS}
   PRIVATE
     ${onnxruntime_INCLUDE_DIRS}
 )
@@ -31,6 +32,8 @@ target_compile_options(${LIBRARY_NAME}
 list(APPEND PRIVATE_LIBS ${onnxruntime_LIBS})
 
 target_link_libraries(${LIBRARY_NAME}
+  PUBLIC
+    ${OpenCV_LIBS}
   PRIVATE
     ${PRIVATE_LIBS}
 )

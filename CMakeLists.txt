@@ -12,7 +12,7 @@ set(onnxruntime_INCLUDE_DIRS
 )
 
 find_library(onnxruntime_LIBS NAMES onnxruntime PATHS /onnxruntime/lib)
-
+find_package(OpenCV REQUIRED)
 find_package(CUDA QUIET)
 
 if(CUDA_FOUND AND USE_GPU)
@@ -37,6 +37,8 @@ add_subdirectory(src)
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif(BUILD_EXAMPLES)
+
+add_subdirectory(ort-superpoint)
 
 # For installing package
 install(TARGETS ${PROJECT_NAME}

@@ -5,13 +5,13 @@ set (CMAKE_CXX_STANDARD 17)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-set(onnxruntime_INSTALL_PREFIX /onnxruntime)
+set(onnxruntime_INSTALL_PREFIX /onnx_runtime_cpp/onnxruntime)
 set(onnxruntime_INCLUDE_DIRS
   ${onnxruntime_INSTALL_PREFIX}/include
   ${onnxruntime_INSTALL_PREFIX}/include/core/providers
 )
 
-find_library(onnxruntime_LIBS NAMES onnxruntime PATHS /onnxruntime/lib)
+find_library(onnxruntime_LIBS NAMES onnxruntime PATHS ${onnxruntime_INSTALL_PREFIX}/lib)
 find_package(OpenCV REQUIRED)
 find_package(CUDA QUIET)
 

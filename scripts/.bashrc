@@ -1,0 +1,1 @@
+export LD_LIBRARY_PATH=/onnx_runtime_cpp/onnxruntime/lib:$LD_LIBRARY_PATH

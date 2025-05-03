@@ -22,4 +22,5 @@ xhost +local:docker && \
     --ipc=host \
     --network=host \
     --device-cgroup-rule='c *:* rmw' \
+    --gpus all \
     --name ${CONTAINER} $IMAGE

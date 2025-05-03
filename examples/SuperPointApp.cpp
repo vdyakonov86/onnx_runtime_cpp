@@ -8,6 +8,9 @@
 #include "ort-superpoint/SuperPoint.hpp"
 #include "ort-superpoint/Utility.hpp"
 #include <opencv2/features2d.hpp>
+#include <iostream>
+#include <onnxruntime_c_api.h>
+#include <onnxruntime_cxx_api.h>
 
 namespace
 {
@@ -21,6 +24,16 @@ int main(int argc, char* argv[])
         std::cerr << "Usage: [apps] [path/to/onnx/super/point] [path/to/image1] [path/to/image2]" << std::endl;
         return EXIT_FAILURE;
     }
+
+    Ort::Env env;
+    Ort::SessionOptions session_options;
+
+    std::cout << "" << std::endl;
+    std::cout << "Available providers: ";
+    for (const auto& provider : Ort::GetAvailableProviders()) {
+        std::cout << provider << " ";
+    }
+    std::cout << std::endl;
 
     const std::string ONNX_MODEL_PATH = argv[1];
     const std::vector<std::string> IMAGE_PATHS = {argv[2], argv[3]};

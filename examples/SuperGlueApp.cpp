@@ -1,12 +1,6 @@
-/**
- * @file    SuperGlueApp.cpp
- *
- * @author  btran
- *
- */
-
-#include "SuperPoint.hpp"
-#include "Utility.hpp"
+#include "ort-superpoint/SuperPoint.hpp"
+#include "ort-superpoint/Utility.hpp"
+#include "ort-superglue/SuperGlue.hpp"
 
 namespace
 {
@@ -56,73 +50,13 @@ int main(int argc, char* argv[])
                        return processOneFrameSuperPoint(superPointOsh, gray, dst.data());
                    });
 
-    for (auto& curKeyPointAndDesc : superPointResults) {
-        normalizeDescriptors(&curKeyPointAndDesc.second);
-    }
-
+    
     // superglue
-    static const int DUMMY_NUM_KEYPOINTS = 256;
-    Ort::OrtSessionHandler superGlueOsh(SUPERGLUE_ONNX_MODEL_PATH, 0,
-                                        std::vector<std::vector<int64_t>>{
-                                            {4},
-                                            {1, DUMMY_NUM_KEYPOINTS},
-                                            {1, DUMMY_NUM_KEYPOINTS, 2},
-                                            {1, 256, DUMMY_NUM_KEYPOINTS},
-                                            {4},
-                                            {1, DUMMY_NUM_KEYPOINTS},
-                                            {1, DUMMY_NUM_KEYPOINTS, 2},
-                                            {1, 256, DUMMY_NUM_KEYPOINTS},
-                                        });
-
-    int numKeypoints0 = superPointResults[0].first.size();
-    int numKeypoints1 = superPointResults[1].first.size();
-    std::vector<std::vector<int64_t>> inputShapes = {
-        {4}, {1, numKeypoints0}, {1, numKeypoints0, 2}, {1, 256, numKeypoints0},
-        {4}, {1, numKeypoints1}, {1, numKeypoints1, 2}, {1, 256, numKeypoints1},
-    };
-    superGlueOsh.updateInputShapes(inputShapes);
-
-    std::vector<std::vector<float>> imageShapes(2);
-    std::vector<std::vector<float>> scores(2);
-    std::vector<std::vector<float>> keypoints(2);
-    std::vector<std::vector<float>> descriptors(2);
-
-    cv::Mat buffer;
-    for (int i = 0; i < 2; ++i) {
-        imageShapes[i] = {1, 1, static_cast<float>(images[0].rows), static_cast<float>(images[0].cols)};
-        std::transform(superPointResults[i].first.begin(), superPointResults[i].first.end(),
-                       std::back_inserter(scores[i]), [](const cv::KeyPoint& keypoint) { return keypoint.response; });
-        for (const auto& k : superPointResults[i].first) {
-            keypoints[i].emplace_back(k.pt.y);
-            keypoints[i].emplace_back(k.pt.x);
-        }
-
-        transposeNDWrapper(superPointResults[i].second, {1, 0}, buffer);
-        std::copy(buffer.begin<float>(), buffer.end<float>(), std::back_inserter(descriptors[i]));
-        buffer.release();
-    }
-    std::vector<Ort::OrtSessionHandler::DataOutputType> superGlueOrtOutput =
-        superGlueOsh({imageShapes[0].data(), scores[0].data(), keypoints[0].data(), descriptors[0].data(),
-                      imageShapes[1].data(), scores[1].data(), keypoints[1].data(), descriptors[1].data()});
-
-    // match keypoints 0 to keypoints 1
-    std::vector<int64_t> matchIndices(reinterpret_cast<int64_t*>(superGlueOrtOutput[0].first),
-                                      reinterpret_cast<int64_t*>(superGlueOrtOutput[0].first) + numKeypoints0);
-
-    std::vector<cv::DMatch> goodMatches;
-    for (std::size_t i = 0; i < matchIndices.size(); ++i) {
-        if (matchIndices[i] < 0) {
-            continue;
-        }
-        cv::DMatch match;
-        match.imgIdx = 0;
-        match.queryIdx = i;
-        match.trainIdx = matchIndices[i];
-        goodMatches.emplace_back(match);
-    }
+    Ort::SuperGlue superGlueOsh(SUPERGLUE_ONNX_MODEL_PATH, 0);
+    auto matches = superGlueOsh.inference(superGlueOsh, superPointResults, images[0]);
 
     cv::Mat matchesImage;
-    cv::drawMatches(images[0], superPointResults[0].first, images[1], superPointResults[1].first, goodMatches,
+    cv::drawMatches(images[0], superPointResults[0].first, images[1], superPointResults[1].first, matches,
                     matchesImage, cv::Scalar::all(-1), cv::Scalar::all(-1), std::vector<char>(),
                     cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
     cv::imwrite("super_point_super_glue_good_matches.jpg", matchesImage);

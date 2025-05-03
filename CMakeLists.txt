@@ -39,6 +39,7 @@ if(BUILD_EXAMPLES)
 endif(BUILD_EXAMPLES)
 
 add_subdirectory(ort-superpoint)
+add_subdirectory(ort-superglue)
 
 # For installing package
 install(TARGETS ${PROJECT_NAME}

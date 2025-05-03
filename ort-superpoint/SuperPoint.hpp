@@ -13,6 +13,8 @@
 
 namespace Ort
 {
+typedef std::pair<std::vector<cv::KeyPoint>, cv::Mat> KeyPointAndDesc;
+
 class SuperPoint : public OrtSessionHandler
 {
  public:
@@ -21,6 +23,10 @@ class SuperPoint : public OrtSessionHandler
     static constexpr int64_t IMG_CHANNEL = 1;
 
     using OrtSessionHandler::OrtSessionHandler;
+
+    KeyPointAndDesc inference(SuperPoint& superPoint, const cv::Mat& image, int borderRemove = 4, float confidenceThresh = 0.015, bool alignCorners = true, int distThresh = 2);
+
+    std::vector<std::vector<int64_t>> getInputShapes();
 
     void preprocess(float* dst,                     //
                     const unsigned char* src,       //

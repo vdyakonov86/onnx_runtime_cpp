@@ -125,4 +125,48 @@ cv::Mat SuperPoint::getDescriptors(const cv::Mat& coarseDescriptors, const std::
 
     return buffer;
 }
+
+std::vector<std::vector<int64_t>> SuperPoint::getInputShapes() {
+    return std::vector<std::vector<int64_t>>{{1, Ort::SuperPoint::IMG_CHANNEL, Ort::SuperPoint::IMG_H, Ort::SuperPoint::IMG_W}};
+}
+
+KeyPointAndDesc SuperPoint::inference(SuperPoint& superPoint, const cv::Mat& img, int borderRemove, float confidenceThresh, bool alignCorners, int distThresh) {
+    auto inputShapes = superPoint.getInputShapes();
+    superPoint.updateInputShapes(inputShapes);
+
+    int origW = img.cols, origH = img.rows;
+    cv::Mat scaledImg;
+    cv::resize(img, scaledImg, cv::Size(Ort::SuperPoint::IMG_W, Ort::SuperPoint::IMG_H), 0, 0, cv::INTER_CUBIC);
+
+    std::vector<float> dst(Ort::SuperPoint::IMG_CHANNEL * Ort::SuperPoint::IMG_H * Ort::SuperPoint::IMG_W);
+
+    superPoint.preprocess(dst.data(), scaledImg.data, Ort::SuperPoint::IMG_W, Ort::SuperPoint::IMG_H,
+                             Ort::SuperPoint::IMG_CHANNEL);
+    auto inferenceOutput = superPoint({dst.data()});
+
+    std::vector<cv::KeyPoint> keyPoints = superPoint.getKeyPoints(inferenceOutput, borderRemove, confidenceThresh);
+
+    std::vector<int> descriptorShape(inferenceOutput[1].second.begin(), inferenceOutput[1].second.end());
+    cv::Mat coarseDescriptorMat(descriptorShape.size(), descriptorShape.data(), CV_32F,
+                                inferenceOutput[1].first);  // 1 x 256 x H/8 x W/8
+
+    std::vector<int> keepIndices =
+        superPoint.nmsFast(keyPoints, Ort::SuperPoint::IMG_H, Ort::SuperPoint::IMG_W, distThresh);
+
+    std::vector<cv::KeyPoint> keepKeyPoints;
+    keepKeyPoints.reserve(keepIndices.size());
+    std::transform(keepIndices.begin(), keepIndices.end(), std::back_inserter(keepKeyPoints),
+                   [&keyPoints](int idx) { return keyPoints[idx]; });
+    keyPoints = std::move(keepKeyPoints);
+
+    cv::Mat descriptors = superPoint.getDescriptors(coarseDescriptorMat, keyPoints, Ort::SuperPoint::IMG_H,
+                                                       Ort::SuperPoint::IMG_W, alignCorners);
+
+    for (auto& keyPoint : keyPoints) {
+        keyPoint.pt.x *= static_cast<float>(origW) / Ort::SuperPoint::IMG_W;
+        keyPoint.pt.y *= static_cast<float>(origH) / Ort::SuperPoint::IMG_H;
+    }
+
+    return {keyPoints, descriptors};
+}
 }  // namespace Ort

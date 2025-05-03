@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     std::transform(grays.begin(), grays.end(), std::back_inserter(results),
                    [&osh](const auto& gray) { return osh.inference(osh, gray); });
 
-    auto matches = osh.getMatches(results[0].second, results[1].second);
+    auto matches = osh.getMatches(results[0].second, results[1].second, "flann", 0.8);
 
     cv::Mat matchesImage;
     cv::drawMatches(images[0], results[0].first, images[1], results[1].first, matches, matchesImage,

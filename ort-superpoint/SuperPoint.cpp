@@ -1,12 +1,11 @@
-/**
- * @file    SuperPoint.cpp
- *
- * @author  btran
- *
- */
 
 #include "SuperPoint.hpp"
 #include "Utility.hpp"
+
+#include "opencv2/core.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/features2d.hpp"
+using namespace cv;
 
 namespace Ort
 {
@@ -170,10 +169,26 @@ KeyPointAndDesc SuperPoint::inference(SuperPoint& superPoint, const cv::Mat& img
     return {keyPoints, descriptors};
 }
 
-std::vector<cv::DMatch> SuperPoint::getMatches(const cv::Mat& queryDesc, const cv::Mat& refDesc) {
-    cv::BFMatcher matcher(cv::NORM_L2, true /* crossCheck */);
-    std::vector<cv::DMatch> knnMatches;
-    matcher.match(queryDesc, refDesc, knnMatches);
-    return knnMatches;
+std::vector<cv::DMatch> SuperPoint::getMatches(const cv::Mat& queryDesc, const cv::Mat& refDesc, std::string matcherType, const float ratio_thresh) {
+    std::vector<cv::DMatch> matches;
+
+    if (matcherType == "bf") {
+        cv::BFMatcher matcher(cv::NORM_L2, true /* crossCheck */);
+        matcher.match(queryDesc, refDesc, matches);
+    }
+    else if (matcherType == "flann") {
+        std::vector< std::vector<DMatch> > knn_matches;
+        Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
+        matcher->knnMatch(queryDesc, refDesc, knn_matches, 2);
+
+        for (size_t i = 0; i < knn_matches.size(); i++) {
+            if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
+                matches.push_back(knn_matches[i][0]);
+        }
+
+    }
+
+    return matches;
+    
 }
 }  // namespace Ort

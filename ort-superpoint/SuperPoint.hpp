@@ -52,5 +52,7 @@ class SuperPoint : public OrtSessionHandler
      */
     cv::Mat getDescriptors(const cv::Mat& coarseDescriptors, const std::vector<cv::KeyPoint>& keyPoints, int height,
                            int width, bool alignCorners) const;
+
+    std::vector<cv::DMatch> getMatches(const cv::Mat& queryDesc, const cv::Mat& refDesc);
 };
 }  // namespace Ort

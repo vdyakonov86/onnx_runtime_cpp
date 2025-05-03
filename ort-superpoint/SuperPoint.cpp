@@ -169,4 +169,11 @@ KeyPointAndDesc SuperPoint::inference(SuperPoint& superPoint, const cv::Mat& img
 
     return {keyPoints, descriptors};
 }
+
+std::vector<cv::DMatch> SuperPoint::getMatches(const cv::Mat& queryDesc, const cv::Mat& refDesc) {
+    cv::BFMatcher matcher(cv::NORM_L2, true /* crossCheck */);
+    std::vector<cv::DMatch> knnMatches;
+    matcher.match(queryDesc, refDesc, knnMatches);
+    return knnMatches;
+}
 }  // namespace Ort

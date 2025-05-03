@@ -44,12 +44,10 @@ int main(int argc, char* argv[])
     std::transform(grays.begin(), grays.end(), std::back_inserter(results),
                    [&osh](const auto& gray) { return osh.inference(osh, gray); });
 
-    cv::BFMatcher matcher(cv::NORM_L2, true /* crossCheck */);
-    std::vector<cv::DMatch> knnMatches;
-    matcher.match(results[0].second, results[1].second, knnMatches);
+    auto matches = osh.getMatches(results[0].second, results[1].second);
 
     cv::Mat matchesImage;
-    cv::drawMatches(images[0], results[0].first, images[1], results[1].first, knnMatches, matchesImage,
+    cv::drawMatches(images[0], results[0].first, images[1], results[1].first, matches, matchesImage,
                     cv::Scalar::all(-1), cv::Scalar::all(-1), std::vector<char>(),
                     cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
     cv::imwrite("super_point_good_matches.jpg", matchesImage);

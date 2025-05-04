@@ -29,7 +29,7 @@ target_compile_options(${LIBRARY_NAME}
      $<$<CONFIG:Release>:-O3>
 )
 
-list(APPEND PRIVATE_LIBS ${onnxruntime_LIBS})
+list(APPEND PRIVATE_LIBS ${onnxruntime_LIBS} ${onnxruntime_LIBS_CUDA})
 
 target_link_libraries(${LIBRARY_NAME}
   PUBLIC

@@ -7,14 +7,8 @@ list(APPEND EXAMPLES
 
 include(cmake_utility)
 
-set(onnxruntime_INSTALL_PREFIX /onnx_runtime_cpp/onnxruntime)
-set(onnxruntime_INCLUDE_DIRS
-  ${onnxruntime_INSTALL_PREFIX}/include
-  ${onnxruntime_INSTALL_PREFIX}/include/core/providers
-)
 
 find_package(OpenCV REQUIRED)
-find_library(onnxruntime_LIBS NAMES onnxruntime PATHS ${onnxruntime_INSTALL_PREFIX}/lib)
 
 list(APPEND PUBLIC_LIBS
   ${PROJECT_NAME}
@@ -161,6 +155,7 @@ target_link_libraries(super_point
     ${PROJECT_NAME}
     ${OpenCV_LIBS}
     ${onnxruntime_LIBS}
+    ${onnxruntime_LIBS_CUDA}
 )
 
 target_include_directories(super_point
@@ -184,11 +179,14 @@ target_link_libraries(super_glue
   PUBLIC
     ${PROJECT_NAME}
     ${OpenCV_LIBS}
+    ${onnxruntime_LIBS}
+    ${onnxruntime_LIBS_CUDA}
 )
 
 target_include_directories(super_glue
   PUBLIC
     ${OpenCV_INCLUDE_DIRS}
+    ${onnxruntime_INCLUDE_DIRS}
 )
 
 # ---------------------------------------------------------
@@ -202,9 +200,12 @@ target_link_libraries(loftr
   PUBLIC
     ${PROJECT_NAME}
     ${OpenCV_LIBS}
+    ${onnxruntime_LIBS}
+    ${onnxruntime_LIBS_CUDA}
 )
 
 target_include_directories(loftr
   PUBLIC
     ${OpenCV_INCLUDE_DIRS}
+    ${onnxruntime_INCLUDE_DIRS}
 )

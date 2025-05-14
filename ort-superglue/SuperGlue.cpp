@@ -6,9 +6,11 @@
  {
     std::vector<cv::DMatch> SuperGlue::inference(
         SuperGlue& superGlue,
-        std::vector<KeyPointAndDesc>& superPointResults,
-        cv::Mat& image)
+        std::pair<std::vector<cv::KeyPoint>, cv::Mat>& firstObservation,
+        std::pair<std::vector<cv::KeyPoint>, cv::Mat>& secondObservation,
+        cv::Size imageSize)
     {
+        std::vector<KeyPointAndDesc> superPointResults {firstObservation, secondObservation};
         int numKeypoints0 = superPointResults[0].first.size();
         int numKeypoints1 = superPointResults[1].first.size();
 
@@ -26,7 +28,8 @@
     
         cv::Mat buffer;
         for (int i = 0; i < 2; ++i) {
-            imageShapes[i] = {1, 1, static_cast<float>(image.rows), static_cast<float>(image.cols)};
+            // imageShapes[i] = {1, 1, static_cast<float>(image.rows), static_cast<float>(image.cols)};
+            imageShapes[i] = {1, 1, static_cast<float>(imageSize.height), static_cast<float>(imageSize.width)};
             std::transform(superPointResults[i].first.begin(), superPointResults[i].first.end(),
                            std::back_inserter(scores[i]), [](const cv::KeyPoint& keypoint) { return keypoint.response; });
             for (const auto& k : superPointResults[i].first) {

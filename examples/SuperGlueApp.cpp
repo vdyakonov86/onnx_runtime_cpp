@@ -40,8 +40,10 @@ int main(int argc, char* argv[])
                    [&superPointOsh](const auto &gray) { return superPointOsh.inference(superPointOsh, gray);});
     
     // superglue
+    // std::pair<std::vector<cv::KeyPoint>, cv::Mat> obs1, obs2;
+
     Ort::SuperGlue superGlueOsh(SUPERGLUE_ONNX_MODEL_PATH, 0);
-    auto matches = superGlueOsh.inference(superGlueOsh, superPointResults, images[0]);
+    auto matches = superGlueOsh.inference(superGlueOsh, superPointResults[0], superPointResults[1], images[0].size());
 
     cv::Mat matchesImage;
     cv::drawMatches(images[0], superPointResults[0].first, images[1], superPointResults[1].first, matches,

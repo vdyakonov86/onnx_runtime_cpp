@@ -18,7 +18,11 @@
 
       void normalizeDescriptors(cv::Mat* descriptors);
 
-      std::vector<cv::DMatch> inference(SuperGlue& superGlue, std::vector<KeyPointAndDesc>& superPointResults, cv::Mat& image);
+      std::vector<cv::DMatch> inference(
+        SuperGlue& superGlue,
+        std::pair<std::vector<cv::KeyPoint>, cv::Mat>& firstObservation,
+        std::pair<std::vector<cv::KeyPoint>, cv::Mat>& secondObservation,
+        cv::Size imageSize);
  };
  }  // namespace Ort
  

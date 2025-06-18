@@ -42,6 +42,7 @@ endif(BUILD_EXAMPLES)
 
 add_subdirectory(ort-superpoint)
 add_subdirectory(ort-superglue)
+add_subdirectory(ort-lightglue)
 add_subdirectory(ort-loftr)
 
 # For installing package

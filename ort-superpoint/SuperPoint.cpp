@@ -110,7 +110,7 @@ cv::Mat SuperPoint::getDescriptors(const cv::Mat& coarseDescriptors, const std::
 {
     cv::Mat keyPointMat(keyPoints.size(), 2, CV_32F);
 
-    for (int i = 0; i < keyPoints.size(); ++i) {
+    for (int i = 0; i < static_cast<int>(keyPoints.size()); ++i) {
         auto rowPtr = keyPointMat.ptr<float>(i);
         rowPtr[0] = 2 * keyPoints[i].pt.y / (height - 1) - 1;
         rowPtr[1] = 2 * keyPoints[i].pt.x / (width - 1) - 1;

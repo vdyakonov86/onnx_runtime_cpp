@@ -26,7 +26,7 @@ class SuperPoint : public OrtSessionHandler
 
     KeyPointAndDesc inference(SuperPoint& superPoint, const cv::Mat& image, int borderRemove = 4, float confidenceThresh = 0.015, bool alignCorners = true, int distThresh = 2);
 
-    std::vector<std::vector<int64_t>> getInputShapes();
+    std::vector<std::vector<int64_t>> getInputShapes(int64_t imgH, int64_t imgW);
 
     void preprocess(float* dst,                     //
                     const unsigned char* src,       //

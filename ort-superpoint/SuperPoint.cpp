@@ -115,31 +115,36 @@ cv::Mat SuperPoint::getDescriptors(const cv::Mat& coarseDescriptors, const std::
         rowPtr[0] = 2 * keyPoints[i].pt.y / (height - 1) - 1;
         rowPtr[1] = 2 * keyPoints[i].pt.x / (width - 1) - 1;
     }
+    // std::cout << "reshape 1" << std::endl;
     keyPointMat = keyPointMat.reshape(1, {1, 1, static_cast<int>(keyPoints.size()), 2});
+    // std::cout << "bilinearGridSample" << std::endl;
     cv::Mat descriptors = bilinearGridSample(coarseDescriptors, keyPointMat, alignCorners);
+    // std::cout << "reshape 2" << std::endl;
     descriptors = descriptors.reshape(1, {coarseDescriptors.size[1], static_cast<int>(keyPoints.size())});
 
     cv::Mat buffer;
+    // std::cout << "transposeNDWrapper" << std::endl;
     transposeNDWrapper(descriptors, {1, 0}, buffer);
 
     return buffer;
 }
 
-std::vector<std::vector<int64_t>> SuperPoint::getInputShapes() {
-    return std::vector<std::vector<int64_t>>{{1, Ort::SuperPoint::IMG_CHANNEL, Ort::SuperPoint::IMG_H, Ort::SuperPoint::IMG_W}};
+std::vector<std::vector<int64_t>> SuperPoint::getInputShapes(int64_t imgH, int64_t imgW) {
+    return std::vector<std::vector<int64_t>>{{1, Ort::SuperPoint::IMG_CHANNEL, imgH, imgW}};
 }
 
 KeyPointAndDesc SuperPoint::inference(SuperPoint& superPoint, const cv::Mat& img, int borderRemove, float confidenceThresh, bool alignCorners, int distThresh) {
-    auto inputShapes = superPoint.getInputShapes();
+    int imgW = img.cols, imgH = img.rows;
+
+    auto inputShapes = superPoint.getInputShapes(imgH, imgW);
     superPoint.updateInputShapes(inputShapes);
 
-    int origW = img.cols, origH = img.rows;
     cv::Mat scaledImg;
-    cv::resize(img, scaledImg, cv::Size(Ort::SuperPoint::IMG_W, Ort::SuperPoint::IMG_H), 0, 0, cv::INTER_CUBIC);
+    cv::resize(img, scaledImg, cv::Size(imgW, imgH), 0, 0, cv::INTER_CUBIC);
 
-    std::vector<float> dst(Ort::SuperPoint::IMG_CHANNEL * Ort::SuperPoint::IMG_H * Ort::SuperPoint::IMG_W);
+    std::vector<float> dst(Ort::SuperPoint::IMG_CHANNEL * imgH * imgW);
 
-    superPoint.preprocess(dst.data(), scaledImg.data, Ort::SuperPoint::IMG_W, Ort::SuperPoint::IMG_H,
+    superPoint.preprocess(dst.data(), scaledImg.data, imgW, imgH,
                              Ort::SuperPoint::IMG_CHANNEL);
     auto inferenceOutput = superPoint({dst.data()});
 
@@ -150,7 +155,7 @@ KeyPointAndDesc SuperPoint::inference(SuperPoint& superPoint, const cv::Mat& img
                                 inferenceOutput[1].first);  // 1 x 256 x H/8 x W/8
 
     std::vector<int> keepIndices =
-        superPoint.nmsFast(keyPoints, Ort::SuperPoint::IMG_H, Ort::SuperPoint::IMG_W, distThresh);
+        superPoint.nmsFast(keyPoints, imgH, imgW, distThresh);
 
     std::vector<cv::KeyPoint> keepKeyPoints;
     keepKeyPoints.reserve(keepIndices.size());
@@ -158,12 +163,15 @@ KeyPointAndDesc SuperPoint::inference(SuperPoint& superPoint, const cv::Mat& img
                    [&keyPoints](int idx) { return keyPoints[idx]; });
     keyPoints = std::move(keepKeyPoints);
 
-    cv::Mat descriptors = superPoint.getDescriptors(coarseDescriptorMat, keyPoints, Ort::SuperPoint::IMG_H,
-                                                       Ort::SuperPoint::IMG_W, alignCorners);
+    cv::Mat descriptors;
+    if (keyPoints.size())
+        descriptors = superPoint.getDescriptors(coarseDescriptorMat, keyPoints, imgH, imgW, alignCorners);
+    else
+        descriptors.create(0, 0, CV_32F);
 
     for (auto& keyPoint : keyPoints) {
-        keyPoint.pt.x *= static_cast<float>(origW) / Ort::SuperPoint::IMG_W;
-        keyPoint.pt.y *= static_cast<float>(origH) / Ort::SuperPoint::IMG_H;
+        keyPoint.pt.x *= static_cast<float>(imgW) / imgW;
+        keyPoint.pt.y *= static_cast<float>(imgH) / imgH;
     }
 
     return {keyPoints, descriptors};
@@ -171,6 +179,11 @@ KeyPointAndDesc SuperPoint::inference(SuperPoint& superPoint, const cv::Mat& img
 
 std::vector<cv::DMatch> SuperPoint::getMatches(const cv::Mat& queryDesc, const cv::Mat& refDesc, std::string matcherType, const float ratio_thresh) {
     std::vector<cv::DMatch> matches;
+
+    if (queryDesc.empty() || refDesc.empty()) {
+        std::cerr << "Ort SuperPoint getMatches Warning: One of the descriptor sets is empty!" << std::endl;
+        return matches;
+    }
 
     if (matcherType == "bf") {
         cv::BFMatcher matcher(cv::NORM_L2, true /* crossCheck */);
